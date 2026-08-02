@@ -9,17 +9,16 @@ class AnimalDataset(Dataset):
 
     def __init__(self, root_dir):
 
-        # Normalize to [-1, 1] to match Tanh output
         self.transform = transforms.Compose([
             transforms.Resize((64, 64)),
-            transforms.RandomHorizontalFlip(),   # data augmentation
-            transforms.ColorJitter(              # data augmentation
+            transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(
                 brightness=0.1,
                 contrast=0.1,
                 saturation=0.1
             ),
             transforms.ToTensor(),
-            transforms.Normalize(               # [-1, 1] range
+            transforms.Normalize(
                 mean=[0.5, 0.5, 0.5],
                 std=[0.5, 0.5, 0.5]
             )
@@ -27,10 +26,12 @@ class AnimalDataset(Dataset):
 
         self.samples = []
 
+        # ── Added Human as class 3 ─────────────────────────────────────────
         self.class_map = {
-            "Cat": 0,
-            "Dog": 1,
-            "Horse": 2
+            "Cat":   0,
+            "Dog":   1,
+            "Horse": 2,
+            "Human": 3    # ← new
         }
 
         for class_name, label in self.class_map.items():
@@ -43,15 +44,9 @@ class AnimalDataset(Dataset):
 
             count = 0
             for file in os.listdir(folder):
-
-                if file.lower().endswith(
-                    (".jpg", ".jpeg", ".png")
-                ):
+                if file.lower().endswith((".jpg", ".jpeg", ".png")):
                     self.samples.append(
-                        (
-                            os.path.join(folder, file),
-                            label
-                        )
+                        (os.path.join(folder, file), label)
                     )
                     count += 1
 
@@ -68,3 +63,6 @@ class AnimalDataset(Dataset):
         image = self.transform(image)
 
         return torch.tensor(label, dtype=torch.long), image
+
+
+

@@ -1,37 +1,31 @@
 import os
+import io
 from PIL import Image
-import numpy as np
 from rembg import remove
 
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-INPUT_DIR  = "Dataset"           # your original Cat/Dog/Horse folders
-OUTPUT_DIR = "Dataset_Segmented" # clean images saved here
+INPUT_DIR  = "Dataset"
+OUTPUT_DIR = "Dataset_Segmented"
 
-CLASSES = ["Cat", "Dog", "Horse"]
+# Only process Human — Cat/Dog/Horse already done
+CLASSES = ["Human"]
 
 
 # ── Process ───────────────────────────────────────────────────────────────────
 
 def remove_background(input_path, output_path):
-    """
-    Removes background from one image and saves it as a clean RGB image.
-    Black pixels where background was, animal pixels untouched.
-    """
+
     with open(input_path, "rb") as f:
         input_data = f.read()
 
-    # rembg returns RGBA — alpha channel = 0 where background is
     output_data = remove(input_data)
 
-    img = Image.open(
-        __import__("io").BytesIO(output_data)
-    ).convert("RGBA")
+    img = Image.open(io.BytesIO(output_data)).convert("RGBA")
 
-    # Create black background and paste animal on top using alpha mask
     background = Image.new("RGB", img.size, (0, 0, 0))
-    background.paste(img, mask=img.split()[3])  # alpha as mask
+    background.paste(img, mask=img.split()[3])
 
     background.save(output_path)
 
@@ -46,6 +40,10 @@ def preprocess_dataset():
         input_folder  = os.path.join(INPUT_DIR,  class_name)
         output_folder = os.path.join(OUTPUT_DIR, class_name)
 
+        if not os.path.exists(input_folder):
+            print(f"❌ Folder not found: {input_folder}")
+            continue
+
         os.makedirs(output_folder, exist_ok=True)
 
         files = [
@@ -57,13 +55,10 @@ def preprocess_dataset():
 
         for i, file in enumerate(files):
 
-            input_path  = os.path.join(input_folder,  file)
-
-            # Save all as .png to preserve quality
+            input_path  = os.path.join(input_folder, file)
             output_name = os.path.splitext(file)[0] + ".png"
             output_path = os.path.join(output_folder, output_name)
 
-            # Skip already processed images
             if os.path.exists(output_path):
                 print(f"  [{i+1}/{len(files)}] Skipping (exists): {file}")
                 success += 1
@@ -81,7 +76,7 @@ def preprocess_dataset():
             total += 1
 
     print(f"\nFinished! {success}/{total} images processed.")
-    print(f"Segmented dataset saved to → {OUTPUT_DIR}/")
+    print(f"Saved to → {OUTPUT_DIR}/Human/")
 
 
 if __name__ == "__main__":

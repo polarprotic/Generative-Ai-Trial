@@ -66,7 +66,7 @@ if __name__ == '__main__':
             real_images = real_images.to(device)
 
             # Labels for loss — real=1, fake=0
-            real_targets = torch.ones(batch_size,  device=device)
+            real_targets = torch.full((batch_size,), 0.9, device=device)
             fake_targets = torch.zeros(batch_size, device=device)
 
             # ── Train Discriminator ───────────────────────────────────────────
@@ -134,3 +134,12 @@ if __name__ == '__main__':
     torch.save(D.state_dict(), "discriminator.pth")
     print("\nTraining complete!")
     print("Saved → generator.pth, discriminator.pth")
+
+
+
+
+
+
+
+
+
